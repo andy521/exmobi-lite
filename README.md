@@ -1,15 +1,15 @@
 #ExMobi Lite
-ExMobi Lite¿ò¼ÜÊÇÓÃÓÚUIXMLÖÐµÄÀàËÆÓÚjQueryµÄJS¿ò¼Ü¡£ÓÃ·¨ÀàËÆÓÚ$(selector)¡£<br>
-Ê¹ÓÃÊ±ÐèÒýÓÃcore.js£¨ºËÐÄÀà£©ºÍtemplate.js£¨artTemplateµÄ¼ò½àÓï·¨£¬ÓÃÓÚÊý¾Ý×¢Èë£¬ÈçÐèÊ¹ÓÃÔ­ÉúÓï·¨ÇëÒýÓÃtemplate-native£¬Ê¹ÓÃ·½·¨²»±ä£¬Çë²Î¿¼https://github.com/aui/artTemplate£©¡£<br>
-ExMobi LiteÄ¬ÈÏ»áÕ¼ÓÃ$×÷Îª²Ù×÷·û£¬ÈçÓÐÆäËü¿ò¼ÜÒ²Ê¹ÓÃÁË$×÷Îª²Ù×÷·û£¬Çë×îºóÒýÓÃExMobi Lite£¬ÕâÊ±ºòExMobi Lite½«³öÈÃ$µÄÊ¹ÓÃÈ¨¡£¿ÉÒÔÊ¹ÓÃExMobiLite(selector)´úÌæÔ­$²Ù×÷¡£<br>
-µ±ExMobi Lite³öÈÃ$Ê¹ÓÃÈ¨µÄÊ±ºò£¬¿ÉÒÔÍ¨¹ýExMobiLite.noConflict()¹Ò¿¿ÐÂµÄ²Ù×÷·û£¬±ÈÈç£ºvar $a = ExMobiLite.noConflict();ºóÐøÔò¿ÉÍ¨¹ý$a(selector)½øÐÐ²Ù×÷¡£<br>
+ExMobi Liteæ¡†æž¶æ˜¯ç”¨äºŽUIXMLä¸­çš„ç±»ä¼¼äºŽjQueryçš„JSæ¡†æž¶ï¼Œç”¨æ³•ä¸º$(selector)ã€‚<br>
+ä½¿ç”¨æ—¶éœ€å¼•ç”¨core.jsï¼ˆæ ¸å¿ƒç±»ï¼‰å’Œtemplate.jsï¼ˆartTemplateçš„ç®€æ´è¯­æ³•ï¼Œç”¨äºŽæ•°æ®æ³¨å…¥ï¼Œå¦‚éœ€ä½¿ç”¨åŽŸç”Ÿè¯­æ³•è¯·å¼•ç”¨template-nativeï¼Œä½¿ç”¨æ–¹æ³•ä¸å˜ï¼Œè¯·å‚è€ƒhttps://github.com/aui/artTemplateï¼‰ã€‚<br>
+ExMobi Liteé»˜è®¤ä¼šå ç”¨$ä½œä¸ºæ“ä½œç¬¦ï¼Œå¦‚æœ‰å…¶å®ƒæ¡†æž¶ä¹Ÿä½¿ç”¨äº†$ä½œä¸ºæ“ä½œç¬¦ï¼Œè¯·æœ€åŽå¼•ç”¨ExMobi Liteï¼Œè¿™æ—¶å€™ExMobi Liteå°†å‡ºè®©$çš„ä½¿ç”¨æƒã€‚å¯ä»¥ä½¿ç”¨ExMobiLite(selector)ä»£æ›¿åŽŸ$æ“ä½œã€‚<br>
+å½“ExMobi Liteå‡ºè®©$ä½¿ç”¨æƒçš„æ—¶å€™ï¼Œå¯ä»¥é€šè¿‡ExMobiLite.noConflict()æŒ‚é æ–°çš„æ“ä½œç¬¦ï¼Œæ¯”å¦‚ï¼švar $a = ExMobiLite.noConflict();åŽç»­åˆ™å¯é€šè¿‡$a(selector)è¿›è¡Œæ“ä½œã€‚<br>
 <br><br>
 
 
-#²Î¿¼ÎÄµµ
-ExMobi Lite¿ò¼ÜµÄÊ¹ÓÃÎÄµµ¿ÉÒÔÍ¨¹ý·ÃÎÊ<http://bbs.exmobi.cn/thread-4453-1-1.html>²é¿´ÆäÊ¹ÓÃ·½·¨¡£
-#Ê¹ÓÃ½¨Òé
-ExMobi LiteÊÇ»ùÓÚExMobiÒÆ¶¯Ó¦ÓÃÆ½Ì¨·â×°µÄ¿ò¼Ü£¬ËùÒÔÐèÒª¶ÔExMobiÓÐËùÁË½â£¬¿ÉÒÔÍ¨¹ý·ÃÎÊ<http://www.exmobi.cn/>»ñµÃ¸ü¶à°ïÖú
+#å‚è€ƒæ–‡æ¡£
+ExMobi Liteæ¡†æž¶çš„ä½¿ç”¨æ–‡æ¡£å¯ä»¥é€šè¿‡è®¿é—®<http://bbs.exmobi.cn/thread-4453-1-1.html>æŸ¥çœ‹å…¶ä½¿ç”¨æ–¹æ³•ã€‚
+#ä½¿ç”¨å»ºè®®
+ExMobi Liteæ˜¯åŸºäºŽExMobiç§»åŠ¨åº”ç”¨å¹³å°å°è£…çš„æ¡†æž¶ï¼Œæ‰€ä»¥éœ€è¦å¯¹ExMobiæœ‰æ‰€äº†è§£ï¼Œå¯ä»¥é€šè¿‡è®¿é—®<http://www.exmobi.cn/>èŽ·å¾—æ›´å¤šå¸®åŠ©
 #License
 The MIT license.
 <br>
