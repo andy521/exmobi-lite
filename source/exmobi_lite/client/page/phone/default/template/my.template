@@ -1,0 +1,1 @@
+{{each list}}<div>{{$index}}. {{$value}}</div>{{/each}}

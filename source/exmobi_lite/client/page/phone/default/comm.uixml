@@ -1,0 +1,38 @@
+<!-- ExMobi UIXML(XHTML)文件 -->
+<html>
+	<head>
+		<meta content="charset=utf-8"/>
+		<title>常用封装</title>
+		<script>
+		<![CDATA[
+			
+		]]>
+		</script>
+	</head>
+	<body>
+		<font style="color: #c0392b;">JSON操作</font>
+		<div style="margin:4 0;">
+			var str = $.JSON.stringify(json);//将JSON对象转为字符串
+		</div>
+		<div style="margin:4 0;">
+			var json = $.JSON.parse(str);//将字符串转为JSON对象
+		</div>
+		
+		<font style="color: #c0392b;">常用封装</font>
+		<div style="margin:4 0;">
+			$.showMask();//显示进度条
+		</div>
+		<div style="margin:4 0;">
+			$.hideMask();//隐藏进度条
+		</div>
+		<div style="margin:4 0;">
+			$.showToast(msg);//显示toast提示信息
+		</div>
+		
+		<font style="color: #c0392b;">工具集函数</font>
+		<div style="margin:4 0;">
+			var json = $.util.paramsToJSON(params);//将键值对参数转为json对象
+		</div>
+		
+	</body>
+</html>
