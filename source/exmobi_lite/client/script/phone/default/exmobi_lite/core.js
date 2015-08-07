@@ -2,7 +2,7 @@
 *	ExMobi4.x+ JS
 *	Version	: 1.0.0 beta
 *	Author	: nandy007
-*	License MIT @ https://git.oschina.net/nandy007/agile-lite
+*	License MIT @ https://git.oschina.net/nandy007/exmobi-lite
 */
 var ExMobiLite = (function(){
 	
