@@ -3,9 +3,10 @@
 	<head>
 		<meta content="charset=utf-8"/>
 		<title>常用封装</title>
+		<script type="text/javascript" src="res:script/exmobi_lite/core.js"></script>
+		<script type="text/javascript" src="res:script/exmobi_lite/template.js"></script>
 		<script>
 		<![CDATA[
-			
 		]]>
 		</script>
 	</head>
@@ -27,6 +28,12 @@
 		</div>
 		<div style="margin:4 0;">
 			$.showToast(msg);//显示toast提示信息
+		</div>
+		<div style="margin:4 0;">
+			$.alert(msg, okFunc);//显示alert提示信息
+		</div>
+		<div style="margin:4 0;">
+			$.confirm(msg, okFunc, cancleFunc);//显示confirm提示信息
 		</div>
 		
 		<font style="color: #c0392b;">工具集函数</font>

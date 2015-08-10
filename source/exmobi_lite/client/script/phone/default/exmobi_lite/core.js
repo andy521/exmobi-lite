@@ -1,6 +1,6 @@
 /*
 *	ExMobi4.x+ JS
-*	Version	: 1.0.0 beta
+*	Version	: 1.1.0 beta
 *	Author	: nandy007
 *	License MIT @ https://git.oschina.net/nandy007/exmobi-lite
 */
@@ -608,6 +608,32 @@ var ExMobiLite = (function(){
  			_toast.setText(msg);
  			_toast.show();
 
+		};
+		
+		//显示alert
+		var _callbackFuncCollection = {
+			index : 0
+		};
+		_ExMobiLite.alert = function(msg, okFunc){
+			var _index = _callbackFuncCollection.index++;
+			_callbackFuncCollection[_index] = function(){
+				okFunc&&okFunc();
+				delete _callbackFuncCollection[_index];
+			};
+			alert(msg, _callbackFuncCollection[_index]);
+		};
+		_ExMobiLite.confirm  = function(msg, okFunc, cancelFun){
+			var _ok_index = _callbackFuncCollection.index++;
+			_callbackFuncCollection[_ok_index] = function(){
+				okFunc&&okFunc();
+				delete _callbackFuncCollection[_ok_index];
+			};
+			var _cancel_index = _callbackFuncCollection.index++;
+			_callbackFuncCollection[_cancel_index] = function(){
+				cancelFun&&cancelFun();
+				delete _callbackFuncCollection[_cancel_index];
+			};
+			confirm(msg, _callbackFuncCollection[_ok_index], _callbackFuncCollection[_cancel_index]);
 		};
 		
 		//数据注入，str可以是模板字符串、http地址、res本地文件地址；data可以是json对象、http地址、res本地文件地址
