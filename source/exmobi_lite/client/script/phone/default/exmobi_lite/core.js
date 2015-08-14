@@ -1,6 +1,6 @@
 /*
 *	ExMobi4.x+ JS
-*	Version	: 1.1.0 beta
+*	Version	: 1.2.0 beta
 *	Author	: nandy007
 *	License MIT @ https://git.oschina.net/nandy007/exmobi-lite
 */
@@ -40,13 +40,58 @@ var ExMobiLite = (function(){
 		var me = this.me;
 		var dom = this.dom;
 		if(arguments.length==1){
-			return dom[arguments[0]=='class'?'className':arguments[0]];
+			return dom[arguments[0]];
 		}else if(arguments.length==2){
-			dom[arguments[0]=='class'?'className':arguments[0]] = arguments[1];
+			dom[arguments[0]] = arguments[1];
 			return me;
 		}else{
 			return me;
 		}
+	};
+	
+	//给dom添加css
+	domFunc.addClass = function(){
+		var me = this.me;
+		var dom = this.dom;
+		var cn = " "+(dom.className||'').trim()+" ";
+		var cnArr = [];
+		for(var i=0;i<arguments.length;i++){
+			if(cn.indexOf(" "+arguments[i]+" ")==-1) cnArr.push(arguments[i]);
+		}
+		cnArr.push(cn.trim());
+		dom.className = cnArr.join(' ').trim();
+		return me;
+	};
+	
+	//判断dom是否有class
+	domFunc.hasClass = function(cn){
+		var me = this.me;
+		var dom = this.dom;
+		var _cn = " "+(dom.className||'').trim()+" ";
+		cn = " "+(cn||'').trim()+" ";
+		return _cn.indexOf(cn)==-1?false:true;
+	};
+	
+	//移除dom的class
+	domFunc.removeClass = function(cn){
+		var me = this.me;
+		var dom = this.dom;
+		var _cn = " "+(dom.className||'').trim()+" ";
+		cn = " "+(cn||'').trim()+" ";
+		dom.className = _cn.replace(cn, '');
+		return me;
+	};
+	
+	//给dom添加url
+	domFunc.loadUrl = function(url){
+		var me = this.me;
+		var dom = this.dom;
+		if(dom.loadUrl){
+			dom.loadUrl(url);
+		}else if(dom.executeScript){
+			dom.executeScript('location.href="'+url+'"');
+		}
+		return me;
 	};
 	
 	//设置dom的style样式，格式必须符合uixml对于style的JS规范，请参考各个控件支持的样式设置
@@ -738,6 +783,17 @@ var ExMobiLite = (function(){
 		//数据注入，将渲染后的数据替换某个容器中的内容
 		_ExMobiLite.renderReplace = function(selector, str, data, callback){
 			_ExMobiLite.render(selector, str, data, 'replace', callback);
+		};
+		
+		_ExMobiLite.console = function(){
+			var fn = Console?Console.log:Log.i;
+			fn.apply(this, arguments);
+		};
+		
+		_ExMobiLite.preferenceChange = function(fn){
+			beignPreferenceChange();
+			try{ fn&&fn(); }catch(e){ _ExMobiLite.console(e); }
+			endPreferenceChange();
 		};
 	})();
 	

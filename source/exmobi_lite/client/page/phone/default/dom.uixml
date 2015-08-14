@@ -5,11 +5,6 @@
 		<title>Dom操作</title>
 		<script type="text/javascript" src="res:script/exmobi_lite/core.js"></script>
 		<script type="text/javascript" src="res:script/exmobi_lite/template.js"></script>
-		<script>
-		<![CDATA[
-			
-		]]>
-		</script>
 	</head>
 	<header>
 		<tabbar tabtype="trapezia" col="2" showtype="text">
@@ -20,7 +15,7 @@
 	<body>
 		<page id="example">
 			<font style="color: #c0392b;">[]数组索引</font>
-			<div style="margin:4 0;">
+			<div id="aaa" style="margin:4 0;">
 				var nativeDom = $(selector)[index];//根据索引获取某个dom的原生JS对象
 			</div>
 			
@@ -59,6 +54,27 @@
 			<div style="margin:4 0;">
 				支持的样式设置请参考手册
 			</div>
+			
+			<font style="color: #c0392b;">hasClass函数</font>
+			<div style="margin:4 0;">
+				$(selector).hasClass('className');//返回dom是否包含某个样式
+			</div>
+			
+			<font style="color: #c0392b;">addClass函数</font>
+			<div style="margin:4 0;">
+				$(selector).addClass('className', ['className']);//设置dom的某个样式
+			</div>
+			
+			<font style="color: #c0392b;">removeClass函数</font>
+			<div style="margin:4 0;">
+				$(selector).removeClass('className');//移除dom的某个样式
+			</div>
+			
+			<font style="color: #c0392b;">loadUrl函数</font>
+			<div style="margin:4 0;">
+				$(selector).loadUrl('path');//为webview设置url
+			</div>
+
 			
 			<font style="color: #c0392b;">append函数</font>
 			<div style="margin:4 0;">
