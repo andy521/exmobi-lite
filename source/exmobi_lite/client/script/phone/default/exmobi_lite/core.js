@@ -1,6 +1,6 @@
 /*
 *	ExMobi4.x+ JS
-*	Version	: 1.2.0 beta
+*	Version	: 1.2.1 beta
 *	Author	: nandy007
 *	License MIT @ https://git.oschina.net/nandy007/exmobi-lite
 */
@@ -546,7 +546,7 @@ var ExMobiLite = (function(){
 			if(opts.data) ajaxData.data = opts.data;
 			ajaxData.successFunction = '_ExMobiLite_ajax_successFunction';
 			ajaxData.failFunction = '_ExMobiLite_ajax_errorFunction';
-			if(opts.headers) ajaxData.requestHeader = ExMobiLite.JSON.stringify(opts.headers);
+			if(opts.headers) ajaxData.requestHeader = opts.headers;
 			ajaxData.timeout = opts.timeout?(opts.timeout/1000):20;
 			ajaxData.reqCharset = opts.reqCharset||'utf-8';
 			var ajax = new handler(ajaxData);
