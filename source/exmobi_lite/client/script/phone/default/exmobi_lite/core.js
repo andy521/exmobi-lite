@@ -1,6 +1,6 @@
 /*
 *	ExMobi4.x+ JS
-*	Version	: 1.2.1 beta
+*	Version	: 1.2.2 beta
 *	Author	: nandy007
 *	License MIT @ https://git.oschina.net/nandy007/exmobi-lite
 */
@@ -754,13 +754,12 @@ var ExMobiLite = (function(){
 		
 		//数据渲染后注入，将渲染后的数据根据type类型（after|before|replace）注入到某个容器中
 		_ExMobiLite.render = function(selector, str, data, type, callback){
-			var $el = ExMobiLite(selector);
-			if($el.length==0) return;
 			_ExMobiLite.provider(str, data, function(html, tmpl, obj){
 				if(!html){
 					callback&&callback('', '', null);
 					return;
 				}
+				var $el = ExMobiLite(selector);
 				if(type=='after'){
 					$el.append(html);
 				}else if(type=='before'){

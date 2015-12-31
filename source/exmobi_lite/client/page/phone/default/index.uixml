@@ -15,7 +15,6 @@
 			<tab text="示例" bindpage="example"></tab>
 			<tab text="说明" bindpage="info"></tab>
 		</tabbar>
-		
 	</header>
 	<body>
 		<page id="example">

@@ -4,7 +4,7 @@
 		<meta content="charset=utf-8"/>
 		<title>dom数据注入</title>
 		<script type="text/javascript" src="res:script/exmobi_lite/core.js"></script>
-		<script type="text/javascript" src="res:script/exmobi_lite/template.js"></script>
+		<script type="text/javascript" src="res:script/exmobi_lite/template-native.js"></script>
 		<script>
 		<![CDATA[
 			function doRender(){
@@ -24,7 +24,7 @@
 				
 				//更简单的用法就是直接对dom操作
 				$('#content').renderAfter('res:page/template/my.template', 'http://domain/server.jsp', function(h, t, o){
-					//alert(h);
+					//alert($.JSON.stringify(o));
 				});
 			}
 		]]>

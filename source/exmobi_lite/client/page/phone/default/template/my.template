@@ -1,1 +1,3 @@
-{{each list}}<div>{{$index}}. {{$value}}</div>{{/each}}
+<% for (i = 0; i < list.length; i ++) { %>
+<div>条目内容 <%= i + 1 %> ：<%= list[i] %></div>
+<% } %>
