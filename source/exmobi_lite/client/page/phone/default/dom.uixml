@@ -4,7 +4,7 @@
 		<meta content="charset=utf-8"/>
 		<title>Dom操作</title>
 		<script type="text/javascript" src="res:script/exmobi_lite/core.js"></script>
-		<script type="text/javascript" src="res:script/exmobi_lite/template.js"></script>
+		<script type="text/javascript" src="res:script/exmobi_lite/template-native-exmobi.js"></script>
 	</head>
 	<header>
 		<tabbar tabtype="trapezia" col="2" showtype="text">

@@ -1,6 +1,6 @@
 /*
 *	ExMobi4.x+ JS
-*	Version	: 1.2.2 beta
+*	Version	: 1.2.4 beta
 *	Author	: nandy007
 *	License MIT @ https://git.oschina.net/nandy007/exmobi-lite
 */
@@ -42,7 +42,11 @@ var ExMobiLite = (function(){
 		if(arguments.length==1){
 			return dom[arguments[0]];
 		}else if(arguments.length==2){
-			dom[arguments[0]] = arguments[1];
+			if(eventCollection[dom.id]&&eventCollection[dom.id][arguments[0]+'-default']){
+				eventCollection[dom.id][arguments[0]+'-default'] = arguments[1]||_blankFun;
+			}else{
+				dom[arguments[0]] = arguments[1];
+			}
 			return me;
 		}else{
 			return me;
@@ -111,14 +115,14 @@ var ExMobiLite = (function(){
 		return me;
 	};
 	
-	//设置和获取dom的自定data的值，注意此值不可直接写在控件内，只能通过JS操作，因为uixml暂未支持自定义属性
+	//此方法需要ExMobi5.13及以上版本支持
 	domFunc.data = function(){
 		var me = this.me;
 		var dom = this.dom;
 		if(arguments.length==1){
-			return dom['data-'+arguments[0]];
+			return dom.getData(arguments[0]);
 		}else if(arguments.length==2){
-			dom['data-'+arguments[0]] = arguments[1];
+			dom.setData(arguments[0], arguments[1]);
 			return me;
 		}else{
 			return me;
@@ -260,15 +264,73 @@ var ExMobiLite = (function(){
 		_ExMobiLite.renderReplace(dom, str, data, callback);
 		return me;
 	};
+	
+	var _cache = {
+		idCache : {
+			index : 0,
+			pre : 'elid_'
+		}
+	};
 
 	var eventCollection = {};
 	
+	var _eventsId = {
+		index : 0
+	};
+	
+	var _blankFun = 'void(0)';
+	
+	var _eventHandler = function(event, id){
+		if(!eventCollection[id]) return;
+		var curEvent = eventCollection[id][event+'-default'];
+		var dom = document.getElementById(id);
+		if(curEvent){
+			var tempEvents = curEvent.replace(/[^:]+:[^:]+/g,'');
+			if(tempEvents){
+				if(tempEvents!=_blankFun) (new Function('var _this=document.getElementById("'+id+'");'+curEvent.replace('this', '_this')))();
+			}else{
+				window.open(curEvent, dom.target!='_self');
+			}
+		}
+		var events = eventCollection[id][event];
+		if(events){
+			for(var i=0;i<events.length;i++){
+				events[i].apply(dom);
+			}
+		}
+	};
+	
+	domFunc.off = function(event){
+		var me = this.me;
+		var dom = this.dom;
+		if(dom==document) return docFun.off.apply(this, [event, fn]);
+		var id = dom.id;
+		if(!id) return me;
+		delete eventCollection[id];
+		dom[event] = '';
+		return me;
+	};
+
 	//为dom对象添加监听事件
 	domFunc.on = function(event, fn){
 		var me = this.me;
 		var dom = this.dom;
+		if(dom==document) return docFun.on.apply(this, [event, fn]);
 		var id = dom.id;
 		if(!id) return me;
+
+		eventCollection[id] = eventCollection[id]?eventCollection[id]:{};
+		var curEvent = dom[event]||'';
+		var eventDefault = event+'-default';
+		if(!eventCollection[id][eventDefault]){			
+			eventCollection[id][eventDefault] = curEvent||_blankFun;
+		}
+		if(!ExMobiLite._eventCollection[event]){
+			ExMobiLite._eventCollection[event] = _eventHandler;
+		}
+		
+		dom[event] = 'ExMobiLite._eventCollection["'+event+'"]("'+event+'", "'+id+'")';
+
 		eventCollection[id] = eventCollection[id]?eventCollection[id]:{};
 		eventCollection[id][event] = eventCollection[id][event]?eventCollection[id][event]:[];
 		eventCollection[id][event].push(fn);
@@ -279,41 +341,58 @@ var ExMobiLite = (function(){
 	domFunc.trigger = function(event, params){
 		var me = this.me;
 		var dom = this.dom;
+		if(dom==document) return docFun.trigger.apply(this, [event, fn]);
 		var id = dom.id;
-		if(!id||!eventCollection[id]||(eventCollection[id][event]||[]).length==0) return me;
-		var events = eventCollection[id][event];
+		if(!id||!eventCollection[id]) return me;
+		var events = eventCollection[id][event]||[];
 		for(var i=0;i<events.length;i++){
 			var fn = events[i];
 			fn.apply(dom, params instanceof Array?params:[params]);
 		}
+		eventCollection[id][event+'-default']||eventCollection[id][event+'-default']();
 		return me;
 	};
 	
-	//执行dom对象的点击事件
-	domFunc.click = function(fn){
+	var docFun = {};
+	var _docEventCollection = {};
+	var _docEventPre = '__ExMobi_Lite_Document_Event_';
+	docFun.on = function(event, fn){
 		var me = this.me;
 		var dom = this.dom;
-		var target = dom.target||'_blank';
-		if(typeof fn=='function'){
-			ExMobiLite(dom).on('click', fn);
-		}else{
-			var funcs = [dom.href, dom.onclick];
-			for(var i=0;i<funcs.length;i++){
-				var func = (funcs[i]||'').trim();
-				if(!func) continue;
-				ExMobiLite(dom).trigger('click');
-				if(func.indexOf('http:')==0||func.indexOf('https:')==0||func.indexOf('res:')==0||func.indexOf('sys:')==0){
-					window.open(func, target=='_blank');
-				}else if(func.indexOf('javascript:')==0){
-					eval(func.replace('javascript:', ''));
-				}else{
-					eval(func);
-				}
-			}
-			
+
+		_docEventCollection[event] = _docEventCollection[event]?_docEventCollection[event]:[];
+		_docEventCollection[event].push(fn);
+		
+		if(!window[_docEventPre+event]){
+			window[_docEventPre+event] = function(){
+				_ExMobiLite(document).trigger(event);
+			};
+			document.addEventListener(event, window[_docEventPre+event]);
 		}
 		return me;
 	};
+	
+	docFun.off = function(event){
+		var me = this.me;
+		var dom = this.dom;
+		
+		delete _docEventCollection[event];
+		
+		return me;
+	}
+	
+	docFun.trigger = function(event, params){
+		var me = this.me;
+		var dom = this.dom;
+		
+		var events = _docEventCollection[event]||[];
+		for(var i=0;i<events.length;i++){
+			var fn = events[i];
+			fn.apply(dom, params instanceof Array?params:[params]);
+		}
+		
+		return me;
+	}
 	
 	//dom对象的selector实现，selector中必须至少包含tag、#id或者[name='']中之一，否则无法取到对象
 	//支持多属性，多选择器用英文“,”隔开，不支持通配符*，不支持派生，不支持多样式
@@ -332,7 +411,6 @@ var ExMobiLite = (function(){
 						}
 						var domArr = _this.domArr;
 						if(domArr.length==0) return undefined;
-			
 						for(var i=1;i<domArr.length;i++){
 							domFunc[k].apply({
 												me : this,
@@ -356,11 +434,23 @@ var ExMobiLite = (function(){
 			{type : 'cls', match : /\.((?:[\w\u00c0-\uFFFF-]|\\.)+)/},
 			{type : 'attr', match : /\[\s*((?:[\w\u00c0-\uFFFF-]|\\.)+)\s*(?:(\S?=)\s*(['"]*)(.*?)\3|)\s*\]/}
 		];
-		
-		if(selector instanceof Array){
+		if(selector==document){
+			domArr.push(document);
+		}else if(selector instanceof Array){
 			domArr = domArr.concat(selector);
 		}else if(typeof selector=='object'){
 			domArr.push(selector);
+		}else if(typeof selector=='string'&&selector.trim().indexOf('<')==0){
+			var xml = '<root>'+selector+'</root>';
+			var xmlDoc = new XMLDocument();
+			xmlDoc.parseXmlText(xml);
+			var rootElement = xmlDoc.getRootElement();
+			var children = rootElement.childNodes;
+			for(var i=0;i<children.length;i++){
+				if(!children[i].id) continue;
+				var cDom = document.getElementById(children[i].id);
+				if(cDom) domArr.push(cDom);
+			}
 		}else{
 			var paths = selector.split(',');
 			for(var i=0;i<paths.length;i++){
@@ -389,17 +479,19 @@ var ExMobiLite = (function(){
 					var tagName = objName.toLowerCase();
 					if(tagName=='text'||tagName=='fileupload'||tagName=='checkbox'||tagName=='radio'){
 						tagName = 'input';
-					} 
+					}else if(tagName=='listitemtwoline'||tagName=='listitemoneline'){
+						tagName = 'listitem';
+					}
 					return tagName;
 				};
 				
 				var compare = function(dom, index){
-					dom.tagName = formatTagName(dom.objName.toLowerCase());
+					dom.tagName = formatTagName(dom.objName||'');
 					var arr = [
-						{type:'name', eval : 'if(domObj.name&&dom.name!=domObj.name) flag = false;'},
-						{type:'tag', eval : 'if(domObj.tag&&dom.tagName!=domObj.tag&&dom.objName!=domObj.tag) flag = false;'},
-						{type:'clas', eval : 'if(domObj.cls&&dom.className.indexOf(domObj.cls)<0) flag = false;'},
-						{type:'attr', eval : 'if(domObj.attr&&dom[domObj.attr.name]!=domObj.attr.val) flag = false;'}
+						{type:'name', evalStr : 'if(domObj.name&&dom.name!=domObj.name){ flag = false; } return flag;'},
+						{type:'tag', evalStr : 'if(domObj.tag&&dom.tagName!=domObj.tag&&dom.objName!=domObj.tag){ flag = false; } return flag;'},
+						{type:'clas', evalStr : 'if(domObj.cls&&dom.className.indexOf(domObj.cls)<0){ flag = false; } return flag;'},
+						{type:'attr', evalStr : 'if(domObj.attr&&dom[domObj.attr.name]!=domObj.attr.val){ flag = false; } return flag;'}
 					];
 					var flag = true;
 					for(var j=index;j<4;j++){
@@ -412,7 +504,7 @@ var ExMobiLite = (function(){
 								}
 							}
 						}else{
-							eval(obj.eval);
+							flag = (new Function('domObj', 'dom', 'flag', obj.evalStr))(domObj, dom, true);
 						}
 						if(!flag) break;
 					}
@@ -450,12 +542,17 @@ var ExMobiLite = (function(){
 		return new ExMobiDom(selector);
 	};
 	
+	//event绑定
+	(function(){
+		_ExMobiLite._eventCollection = {};
+	})();
+	
 	//扩展JSON对象操作
 	(function(){
 		var JSON = {};
 		JSON.parse = function(str){
 			try{
-				return eval("("+str+")");
+				return (new Function("","return "+str))();
 			}catch(e){
 				return null;
 			}
@@ -486,6 +583,7 @@ var ExMobiLite = (function(){
 	
 	//ExMobi Lite的基本扩展
 	(function(){
+
 		//为ExMobi Lite设置别名调用（不占用$符）
 		_ExMobiLite.noConflict = function(){
 			return this;
@@ -533,7 +631,6 @@ var ExMobiLite = (function(){
 	
 	//对ExMobi的主要异步请求的封装
 	(function(){
-		
 		var _cacheMap = {
 			index : 0
 		};
@@ -546,11 +643,13 @@ var ExMobiLite = (function(){
 			if(opts.data) ajaxData.data = opts.data;
 			ajaxData.successFunction = '_ExMobiLite_ajax_successFunction';
 			ajaxData.failFunction = '_ExMobiLite_ajax_errorFunction';
-			if(opts.headers) ajaxData.requestHeader = opts.headers;
+			opts.headers = opts.headers?opts.headers:{};
+			if(!opts.headers['esn']) opts.headers['esn'] = DeviceUtil.getEsn();
+			if(!opts.headers['imsi']) opts.headers['imsi'] = DeviceUtil.getImsi();
+			ajaxData.requestHeader = opts.headers;
 			ajaxData.timeout = opts.timeout?(opts.timeout/1000):20;
 			ajaxData.reqCharset = opts.reqCharset||'utf-8';
 			var ajax = new handler(ajaxData);
-			
 			var index = _cacheMap.index++;	
 			_cacheMap['_ajax_opts_key_'+index] = opts;	
 			
@@ -583,7 +682,7 @@ var ExMobiLite = (function(){
 			opts.dataType = opts.dataType&&opts.dataType.toLowerCase()=='json'?'json':'text';
 			if(opts.dataType=='json'){
 				try{
-					opts.result = eval('('+result+')');
+					opts.result = _ExMobiLite.JSON.parse(result);
 				}catch(e){
 					delete opts.result;
 				}
@@ -607,7 +706,9 @@ var ExMobiLite = (function(){
 		_ExMobiLite.form = function(opts, handler){
 			if(!opts||!opts.url) return;
 			opts.type = opts.type||'post';
-			if(opts.data){
+			if(opts.formId){
+				opts.data = $('#'+opts.formId)[0].getSubmitData();
+			}else if(opts.data){
 				var dataArr = _ExMobiLite.util.paramsToJSON(opts.data);
 				var fileElementId = typeof opts.fileElementId=='object'?opts.fileElementId.join():fileElementId;
 				fileElementId = ','+(fileElementId?fileElementId:'')+',';
@@ -684,12 +785,13 @@ var ExMobiLite = (function(){
 		//数据注入，str可以是模板字符串、http地址、res本地文件地址；data可以是json对象、http地址、res本地文件地址
 		_ExMobiLite.provider = function(str, data, callback){
 			if(!str||!data) return '';
+			var ajaxHandler = _globalOptions.ajaxHandler||$.ajax;
 			callback = callback||function(){};
 			var result = '';
 			var getTemplate = function(cb){
 				str = _ExMobiLite.util.script(str);
 				if(str.indexOf('http')==0){
-					$.server({
+					ajaxHandler({
 						url : str,
 						success : function(data){
 							cb(data.trim());
@@ -711,7 +813,7 @@ var ExMobiLite = (function(){
 				}else{
 					data = _ExMobiLite.util.script(data);
 					if(data.indexOf('http')==0){
-						$.server({
+						ajaxHandler({
 							url : data,
 							dataType : 'json',
 							success : function(data){
@@ -722,7 +824,7 @@ var ExMobiLite = (function(){
 							}
 						});
 					}else if(data.indexOf('res')==0){
-						cb(FileUtil.readFile(str));
+						cb(_ExMobiLite.JSON.parse(FileUtil.readFile(data)));
 					}else{
 						cb(null);
 					}
@@ -739,8 +841,8 @@ var ExMobiLite = (function(){
 						callback('', tmpl, null);
 						return;
 					}
-					try{
-						result = template.compile(tmpl)(source);
+					try{						
+						result = _ExMobiLite.util.addElementId(template.compile(tmpl)(source));
 					}catch(e){
 						result = '';
 						Log.i('注入失败：', e);
@@ -813,6 +915,14 @@ var ExMobiLite = (function(){
 			return arr;
 		};
 		
+		//为没有id的元素添加id属性
+		_ExMobiLite.util.addElementId = function(h){	
+			return (h||'').replace(/<([A-Za-z]+)(?![^<>]*?id=[^<>]*?>).*?>/g, function(s, s1){
+				_eventsId.index = _eventsId.index+1;
+				return s.replace('<'+s1, '<'+s1+' id="eventid'+_eventsId.index+'"');
+			});
+	    };	
+		
 		//将str中的JS变量还原为字符串
 		_ExMobiLite.util.script = function(str){	
 			str = (str||'').trim();
@@ -821,7 +931,7 @@ var ExMobiLite = (function(){
 	    	str = str.replace(/\$\{([^\}]*)\}/g, function(s, s1){
 	    		try{
 	    			tag = true;
-	    			return eval(s1.trim());
+	    			return _ExMobiLite.util.globalEval(s1.trim());
 	    		}catch(e){
 	    			return '';
 	    		}
@@ -830,13 +940,46 @@ var ExMobiLite = (function(){
 	
 	    	return tag?_ExMobiLite.util.script(str):str;
 	    };	
+	    
+	    _ExMobiLite.util.globalEval = function(str){	
+	    	var s1='e',s2='v',s3='a',s4='l';
+	    	return window[s1+s2+s3+s4].apply(this,[str]);
+	    };
 	})();
 	
 	//ExMobi Lite的插件扩展
-	_ExMobiLite.plugin = {};
+	_ExMobiLite.plugin = {};	
 	
+	var _globalOptions = {
+		ajaxHandler : _ExMobiLite.ajax
+	};
+	
+	_ExMobiLite.setup = function(opts){
+		_globalOptions = _ExMobiLite.extend(_globalOptions, opts)
+	};
+	
+	_ExMobiLite.w = {};
 	(function(){
-		
+		_ExMobiLite.w.open = function(path, data, target){
+			var param = '';
+			var template = (function(){
+				if(path.indexOf('res:')==0){
+					var paths = path.split('?');
+					if(paths.length>1) param = paths[1];
+					return FileUtil.readFile(paths[0]);
+				}else{
+					return path;
+				}
+			})();
+			_ExMobiLite.provider(template, data, function(result, tmpl, source){
+				if(result){
+					window.openData(result, target!='_self', false, '', param);
+				}else{
+					 _ExMobiLite.console('窗口打开失败，内容：'+path);
+				}
+			});
+			
+		};
 	})();
 	
 	

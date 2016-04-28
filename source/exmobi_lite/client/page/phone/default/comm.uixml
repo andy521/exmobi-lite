@@ -4,9 +4,12 @@
 		<meta content="charset=utf-8"/>
 		<title>常用封装</title>
 		<script type="text/javascript" src="res:script/exmobi_lite/core.js"></script>
-		<script type="text/javascript" src="res:script/exmobi_lite/template.js"></script>
+		<script type="text/javascript" src="res:script/exmobi_lite/template-native-exmobi.js"></script>
 		<script>
 		<![CDATA[
+			$(document).on('onstart', function(){
+				alert('页面激活事件触发');
+			});
 		]]>
 		</script>
 	</head>
@@ -44,5 +47,10 @@
 			var json = $.util.paramsToJSON(params);//将键值对参数转为json对象
 		</div>
 		
+		<font style="color: #c0392b;">窗口函数</font>
+		<div style="margin:4 0;">
+			$.w.open(uixmlTemplatePath, json, target);//将整个uixml文件作为模板，使用json渲染后打开此窗口，target为_blank|_self
+			<input type="button" value="打开新窗口" onclick="$.w.open('res:page/template/uixml.template?a=44', {'title':'新窗口', 'data':1})" style="width:100%;"></input>
+		</div>
 	</body>
 </html>
