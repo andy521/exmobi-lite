@@ -552,7 +552,7 @@ var ExMobiLite = (function(){
 		var JSON = {};
 		JSON.parse = function(str){
 			try{
-				return (new Function("","return "+str))();
+				return (new Function("","return "+str.trim()))();
 			}catch(e){
 				return null;
 			}
