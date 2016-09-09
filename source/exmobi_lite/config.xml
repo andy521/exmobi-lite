@@ -3,7 +3,7 @@
   <appid>exmobi_lite</appid>
   <appname>ExMobi Lite轻量级JS框架</appname>
   <description></description>
-  <version>1.2.0</version>
+  <version>1.2.1</version>
   <date>2015-07-28</date>
   <homepage src="res:page/index.uixml"/>
   <faultconfig src=""/>

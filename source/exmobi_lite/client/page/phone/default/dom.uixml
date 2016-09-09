@@ -5,6 +5,9 @@
 		<title>Dom操作</title>
 		<script type="text/javascript" src="res:script/exmobi_lite/core.js"></script>
 		<script type="text/javascript" src="res:script/exmobi_lite/template-native-exmobi.js"></script>
+		<script>
+			alert($('#aa.bb').html());
+		</script>
 	</head>
 	<header>
 		<tabbar tabtype="trapezia" col="2" showtype="text">
@@ -15,7 +18,7 @@
 	<body>
 		<page id="example">
 			<font style="color: #c0392b;">[]数组索引</font>
-			<div id="aaa" style="margin:4 0;">
+			<div id="aa.bb" style="margin:4 0;">
 				var nativeDom = $(selector)[index];//根据索引获取某个dom的原生JS对象
 			</div>
 			

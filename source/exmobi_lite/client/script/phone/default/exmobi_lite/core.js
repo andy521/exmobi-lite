@@ -1,6 +1,6 @@
 /*
 *	ExMobi4.x+ JS
-*	Version	: 1.2.4 beta
+*	Version	: 1.2.5 beta
 *	Author	: nandy007
 *	License MIT @ https://git.oschina.net/nandy007/exmobi-lite
 */
@@ -591,19 +591,23 @@ var ExMobiLite = (function(){
 		
 		//JSON对象深度拷贝
 		_ExMobiLite.extend = function(target, options) {
+			var result = {};
+			for(var k in target){
+				result[k] = target[k];
+			}
 			for (var name in options) {
 		   		copy = options[name];
 		   		if (copy instanceof Array) {
-		        	target[name] = _ExMobiLite.extend([], copy);
+		        	result[name] = _ExMobiLite.extend([], copy);
 		        } else if (typeof copy == 'function'||typeof copy == 'string') {
-		            target[name] = options[name];
+		            result[name] = options[name];
 		   		} else if(copy instanceof Object){
-		   			target[name] = _ExMobiLite.extend({}, copy);
+		   			result[name] = _ExMobiLite.extend({}, copy);
 		   		}else {
-		    		target[name] = options[name];
+		    		result[name] = options[name];
 		   		}
 		  	}
-		  	return target;
+		  	return result;
 		};
 		
 		//自定义dom对象的操作函数
@@ -634,64 +638,143 @@ var ExMobiLite = (function(){
 		var _cacheMap = {
 			index : 0
 		};
+		
+		var _defaultOptions = {
+			dataType : 'text',
+			_beforeSend : function(){
+				this.opts.headers = this.opts.headers||{};
+				this.opts.timeout = this.opts.timeout?(this.opts.timeout/1000):20;
+				if(!this.opts.headers['esn']) this.opts['esn'] = DeviceUtil.getEsn();
+				if(!this.opts.headers['imsi']) this.opts['imsi'] = DeviceUtil.getImsi();
+				if(this.opts.isBlock==true){
+					ExMobiLite.showMask();
+					setTimeout('ExMobiLite.hideMask()',this.opts.timeout*1000);
+				}
+			},
+			_success : function(data){},
+			_error : function(data, status){},
+			_complete : function(data, status){ ExMobiLite.hideMask(); }
+		};
+		
+		var _getDefaultOptions = function(){
+			return _defaultOptions;
+		};
+		
+		var _paramsTemplate = {
+			url : { val : ''},
+			method : { val :　'get', ref : 'type' },
+			data : {val:''},
+			requestHeader : {val:{}, ref:'header'},
+			timeout : {val:20},
+			connectTimeout : {val:15},
+			reqCharset : {val:'utf-8'},
+			rspCharset : {val:'utf-8'},
+			//isBlock :　{val:false},
+			successFunction : {val:'_ExMobiLite_ajax_successFunction'},
+			failFunction : {val:'_ExMobiLite_ajax_errorFunction'}
+		};
+		
+		var _getParamsTemplate = function(){
+			return _paramsTemplate;
+		};
+		
+		_ExMobiLite.ajaxSetup = function(opts){
+			_defaultOptions = _ExMobiLite.extend(_defaultOptions, opts);
+		};
+		
+		_ExMobiLite._ajaxFuncChain = function(){
+			var obj = Array.prototype.shift.call(arguments);
+			var args = Array.prototype.shift.call(arguments);
+			for(var i=0;i<arguments.length;i++){
+				var fn = arguments[i];
+				if(fn&&(fn.apply(obj, args)===false)){
+					break;
+				}
+			}
+		};
+		
+		var putRightParams = function(ajax){
+			var headers = ajax.requestHeader||{};
+			var data = ajax.data;
+			var iskv = true;
+			for(var k in headers){
+				if(k.replace(/[^\w]+/g, '').toLowerCase()==='contenttype'&&headers[k].indexOf('x-www-form-urlencoded')<0){
+					iskv = false;
+					break;
+				}
+			}
+			if(iskv&&typeof data==='object'){
+				var arr = [];
+				for(var k in data){
+					arr.push(k+'='+data[k]);
+				}
+				ajax.data = arr.join('&');
+			}else if(!iskv&&typeof data==='object'){
+				ajax.data = _ExMobiLite.JSON.stringify(data);
+			}
+		};
+		
 		//异步请求基类
-		_ExMobiLite.go = function(opts, handler){
+		_ExMobiLite._go = function(opts, handler){
 			if(!opts||!opts.url) return;
-			var ajaxData = {};
-			ajaxData.url = _ExMobiLite.util.script(opts.url);
-			ajaxData.method = opts.type = opts.type&&opts.type.toLowerCase()=='post'?'post':'get';
-			if(opts.data) ajaxData.data = opts.data;
-			ajaxData.successFunction = '_ExMobiLite_ajax_successFunction';
-			ajaxData.failFunction = '_ExMobiLite_ajax_errorFunction';
-			opts.headers = opts.headers?opts.headers:{};
-			if(!opts.headers['esn']) opts.headers['esn'] = DeviceUtil.getEsn();
-			if(!opts.headers['imsi']) opts.headers['imsi'] = DeviceUtil.getImsi();
-			ajaxData.requestHeader = opts.headers;
-			ajaxData.timeout = opts.timeout?(opts.timeout/1000):20;
-			ajaxData.reqCharset = opts.reqCharset||'utf-8';
-			var ajax = new handler(ajaxData);
-			var index = _cacheMap.index++;	
-			_cacheMap['_ajax_opts_key_'+index] = opts;	
-			
+			this.cacheOptions = _ExMobiLite.extend(_getDefaultOptions(), this.opts=opts);
+			_ExMobiLite._ajaxFuncChain(this, [], _defaultOptions._beforeSend, _defaultOptions.beforeSend, this.opts.beforeSend);
+			this.ajaxData = (function(t, o){
+				var r = {};
+				for(var k in t){
+					r[k] = o[k]||o[t[k]['ref']]||t[k]['val'];
+				}
+				return r;
+			})(_getParamsTemplate(), this.opts);
+			this.ajaxData.url = _ExMobiLite.util.script(this.ajaxData.url);
+			if(handler==Ajax||handler==DirectAjax) putRightParams(this.ajaxData);
+			var ajax = new handler(this.ajaxData);
+			var index = _cacheMap.index++;
+			_cacheMap['_ajax_opts_key_'+index] = this;				
 			ajax.setStringData('_ajax_opts_key_', index);
-			if(opts.isBlock==true) ExMobiLite.showMask();
 			ajax.send();
-			setTimeout('ExMobiLite.hideMask()',ajaxData.timeout*1000);
 		};
 		
 		window._ExMobiLite_ajax_successFunction = function(data){
-			var opts = _ExMobiLite._ajax_getFunction(data);
-			if(typeof opts.result=='undefined'){
-				opts.error&&opts.error(data, '500');
+			var ajaxObj = _ExMobiLite._ajax_getFunction(data);
+			var opts = ajaxObj.opts;
+			if(opts.result==undefined){
+				_ExMobiLite._ajaxFuncChain(ajaxObj, [data, '500'], _defaultOptions._error, _defaultOptions.error, opts.error);
 			}else{
-				opts.success&&opts.success(opts.result);
+				_ExMobiLite._ajaxFuncChain(ajaxObj, [opts.result], _defaultOptions._success, _defaultOptions.success, opts.success);
 			}
+			_ExMobiLite._ajaxFuncChain(ajaxObj, [data, data.status], _defaultOptions._complete, _defaultOptions.complete, opts.complete);
 		};
 		
 		window._ExMobiLite_ajax_errorFunction = function(data){
-			var opts = _ExMobiLite._ajax_getFunction(data);
-			opts.error&&opts.error(data, data.status);
+			var ajaxObj = _ExMobiLite._ajax_getFunction(data);
+			var opts = ajaxObj.opts;
+			_ExMobiLite._ajaxFuncChain(ajaxObj, [data, data.status], _defaultOptions._error, _defaultOptions.error, opts.error);
+			_ExMobiLite._ajaxFuncChain(ajaxObj, [data, data.status], _defaultOptions._complete, _defaultOptions.complete, opts.complete);
 		};
 		
 		_ExMobiLite._ajax_getFunction = function(ajax){
-			var result = ajax.responseText;	
+			var result = ajax.responseText;
 			var index = ajax.getStringData('_ajax_opts_key_');
 			
-			var opts = _cacheMap['_ajax_opts_key_'+index];
-			if(opts.isBlock==true) ExMobiLite.hideMask();
+			var ajaxObj = _cacheMap['_ajax_opts_key_'+index];
+			var opts = ajaxObj.opts;
 			opts.dataType = opts.dataType&&opts.dataType.toLowerCase()=='json'?'json':'text';
 			if(opts.dataType=='json'){
 				try{
-					opts.result = _ExMobiLite.JSON.parse(result);
+					ajaxObj.opts.result = _ExMobiLite.JSON.parse(result);
 				}catch(e){
-					delete opts.result;
+					ajaxObj.opts.result = undefined;
 				}
 			}else{
-				opts.result = ajax.responseText;
+				ajaxObj.opts.result = ajax.responseText;
 			}
 			delete _cacheMap['_ajax_opts_key_'+index];
-			
-			return opts;
+			return ajaxObj;
+		};
+		
+		_ExMobiLite.go = function(opts, handler){
+			new _ExMobiLite._go(opts, handler);
 		};
 		
 		//对应ExMobi的Ajax
@@ -709,10 +792,20 @@ var ExMobiLite = (function(){
 			if(opts.formId){
 				opts.data = $('#'+opts.formId)[0].getSubmitData();
 			}else if(opts.data){
-				var dataArr = _ExMobiLite.util.paramsToJSON(opts.data);
-				var fileElementId = typeof opts.fileElementId=='object'?opts.fileElementId.join():fileElementId;
-				fileElementId = ','+(fileElementId?fileElementId:'')+',';
 				
+				var fileElementId = typeof opts.fileElementId=='object'?opts.fileElementId.join():opts.fileElementId;
+				fileElementId = ','+(fileElementId?fileElementId:'')+',';
+				var dataArr = [];
+				if(typeof opts.data=='object'){
+					for(var k in opts.data){
+						var obj = {};
+						obj[k] = opts.data[k];
+						dataArr.push(obj);
+					}
+				}else{
+					dataArr = _ExMobiLite.util.paramsToJSON(opts.data);
+				}
+
 				for(var i=0;i<dataArr.length;i++){
 					var obj = {};
 					for(var k in dataArr[i]){
@@ -907,9 +1000,9 @@ var ExMobiLite = (function(){
 			var arr = [];
 			if(!data||(typeof data!='string')) return [];
 		
-			data.replace(/(\w+)=(\w+)/ig, function(a, b, c){ 
+			data.replace(/(\w+)=([^&]+)/ig, function(a, b, c){
 				var obj = {};
-			    obj[b] = unescape(c); 
+			    obj[b] = unescape(c);
 			    arr.push(obj);
 			});  
 			return arr;

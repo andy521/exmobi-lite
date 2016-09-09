@@ -69,7 +69,7 @@
 			success：成功回调函数
 		</div>
 		<div style="margin:4 0;">
-			fail：失败回调函数
+			error：失败回调函数
 		</div>
 		<div style="margin:4 0;">
 			isBlock：是否显示进度条，true|false（默认）
